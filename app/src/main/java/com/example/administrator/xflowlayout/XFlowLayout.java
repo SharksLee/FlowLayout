@@ -6,6 +6,7 @@ package com.example.administrator.xflowlayout;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,7 @@ public class XFlowLayout extends ViewGroup {
     public XFlowLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray attrArray = context.obtainStyledAttributes(attrs, R.styleable.XLFlowLayout);
-        mLocationMap = new HashMap<>();
+        mLocationMap = new ArrayMap<>();
         if (attrArray != null) {
             childHorizontalSpace = attrArray.getDimensionPixelSize(R.styleable.XLFlowLayout_childHorizontalSpace, 0);
             childVerticalSpace = attrArray.getDimensionPixelSize(R.styleable.XLFlowLayout_childVerticalSpace, 0);
@@ -100,12 +101,20 @@ public class XFlowLayout extends ViewGroup {
              * 如果加入当前child，则超出最大宽度，则的到目前最大宽度给width，类加height 然后开启新行
              */
             if (lineWidth + childWidth > sizeWidth - getPaddingLeft() - getPaddingRight()) {
-                width = Math.max(lineWidth, childWidth);// 取最大的
+                //取出width，lineWidth，childWidth三者中的最大值
+                if (lineWidth > width) {
+                    width = lineWidth;
+                }
+                if (childWidth > width) {
+                    width = childWidth;
+                }
+
                 lineWidth = childWidth; // 重新开启新行，开始记录
                 // 叠加当前高度，
                 height += lineHeight;
                 // 开启记录下一行的高度
                 lineHeight = childHeight;
+
                 mLocationMap.put(child, new Location(left, top + height, childWidth + left - childHorizontalSpace, height + child.getMeasuredHeight() + top));
             } else {// 否则累加值lineWidth,lineHeight取最大高度
                 mLocationMap.put(child, new Location(lineWidth + left, top + height, lineWidth + childWidth - childHorizontalSpace + left, height + child.getMeasuredHeight() + top));
